@@ -2,11 +2,12 @@ const mongodb = require('../db/connect');
 
 const ObjectId = require('mongodb').ObjectId;
 const collectionNameItems = 'items';
+const approvedNameItems = 'approved';
 
 
 const getAll = async (req, res) => {
   try {
-    const result = await mongodb.getDb().db().collection(collectionNameItems).find();
+    const result = await mongodb.getDb().db().collection(approvedNameItems).find();
     result.toArray().then((anuncios) => {
       if (anuncios.length === 0) {
         res.status(404).json({ message: 'There are no registered anuncios' });
@@ -37,6 +38,15 @@ const getSingle = async (req, res) => {
     }
     
     res.status(200).json(anuncio);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getItemCount = async (req, res) => {
+  try {
+    const count = await mongodb.getDb().db().collection(collectionNameItems).countDocuments();
+    res.status(200).json({ count });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -102,7 +112,7 @@ const borrarAnuncio = async (req, res) => {
       res.status(400).json({ message: 'Se debe tener un ID valido para borrar un anuncio' });
     }
     const itemId = new ObjectId(req.params.id);
-    const response = await mongodb.getDb().db().collection(collectionNameItems).deleteOne({_id: itemId }, true);
+    const response = await mongodb.getDb().db().collection(approvedNameItems).deleteOne({_id: itemId }, true);
 
     if (response.deletedCount > 0) {
       res.status(204).json(response);
@@ -121,4 +131,5 @@ module.exports = {
     crearAnuncio,
     editarAnuncio,
     borrarAnuncio,
+    getItemCount,
 };
